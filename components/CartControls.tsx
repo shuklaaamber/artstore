@@ -1,7 +1,11 @@
 "use client";
 import { useState, useTransition } from "react";
 import { applyPromo, removeLine, removePromo, updateQty } from "@/app/actions/cart";
-import { btnGhost, input, Notice } from "@/components/ui";
+import { Notice } from "@/components/shop-ui";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/native-select";
 
 export function QtyControls({ variantId, qty, max, name }: { variantId: number; qty: number; max: number; name: string }) {
   const [pending, start] = useTransition();
@@ -11,19 +15,19 @@ export function QtyControls({ variantId, qty, max, name }: { variantId: number; 
     <div className="flex flex-wrap items-center gap-3 text-sm">
       <label className="flex items-center gap-2">
         <span className="sr-only">Quantity for {name}</span>
-        <select
+        <NativeSelect
+          size="sm" className="w-20"
           value={Math.min(qty, opts)} disabled={pending}
           onChange={(e) => start(async () => { const r = await updateQty(variantId, Number(e.target.value)); setErr(r.ok ? null : r.error); })}
-          className="rounded-lg border border-line bg-card px-2 py-1.5"
         >
           {Array.from({ length: opts }, (_, i) => i + 1).map((n) => <option key={n}>{n}</option>)}
-        </select>
+        </NativeSelect>
       </label>
-      <button type="button" className="text-muted underline hover:text-fg" disabled={pending} aria-label={`Remove ${name}`}
+      <Button type="button" variant="ghost" size="sm" className="text-muted-foreground" disabled={pending} aria-label={`Remove ${name}`}
         onClick={() => start(async () => { await removeLine(variantId); })}>
         Remove
-      </button>
-      {err && <span role="alert" className="text-danger">{err}</span>}
+      </Button>
+      {err && <span role="alert" className="text-destructive">{err}</span>}
     </div>
   );
 }
@@ -35,10 +39,10 @@ export function PromoBox({ applied, error }: { applied: string | null; error: st
 
   if (applied) {
     return (
-      <div className="flex items-center justify-between rounded-lg border border-line bg-card px-3 py-2 text-sm">
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-muted/50 px-3 py-2 text-sm">
         <span>Code <strong>{applied}</strong> applied{error ? "" : "."}</span>
-        <button className="underline" disabled={pending} onClick={() => start(async () => { await removePromo(); setMsg(null); })}>Remove</button>
-        {error && <p role="alert" className="basis-full pt-1 text-danger">{error}</p>}
+        <Button type="button" variant="ghost" size="sm" disabled={pending} onClick={() => start(async () => { await removePromo(); setMsg(null); })}>Remove</Button>
+        {error && <p role="alert" className="basis-full text-destructive">{error}</p>}
       </div>
     );
   }
@@ -51,10 +55,10 @@ export function PromoBox({ applied, error }: { applied: string | null; error: st
         start(async () => { const r = await applyPromo(code); setMsg(r.ok ? null : r.error); if (r.ok) setCode(""); });
       }}
     >
-      <label htmlFor="promo" className="block text-sm font-medium">Promo code</label>
+      <Label htmlFor="promo">Promo code</Label>
       <div className="flex gap-2">
-        <input id="promo" value={code} onChange={(e) => setCode(e.target.value)} className={input} placeholder="e.g. WELCOME10" autoComplete="off" />
-        <button className={btnGhost} disabled={pending}>{pending ? "…" : "Apply"}</button>
+        <Input id="promo" value={code} onChange={(e) => setCode(e.target.value)} placeholder="e.g. WELCOME10" autoComplete="off" />
+        <Button variant="outline" disabled={pending}>{pending ? "…" : "Apply"}</Button>
       </div>
       <div aria-live="polite">{msg && <Notice kind="error">{msg}</Notice>}</div>
     </form>

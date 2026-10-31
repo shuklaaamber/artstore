@@ -5,7 +5,8 @@ import { sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { getUser } from "@/lib/auth";
 import { ProductCard } from "@/components/ProductCard";
-import { btn } from "@/components/ui";
+import { EmptyState } from "@/components/shop-ui";
+import { Button } from "@/components/ui/button";
 import type { ListItem } from "@/lib/catalog";
 
 export const metadata: Metadata = { title: "Wishlist", robots: { index: false } };
@@ -27,13 +28,12 @@ export default async function Wishlist() {
     rating: Number(r.rating_count) ? Number(r.rating_sum) / Number(r.rating_count) : 0, ratingCount: Number(r.rating_count),
   }));
   return (
-    <section aria-labelledby="h" className="space-y-4">
-      <h1 id="h" className="text-2xl font-bold">Your wishlist</h1>
+    <section aria-labelledby="h" className="space-y-5">
+      <h1 id="h" className="text-2xl font-bold tracking-tight">Your wishlist</h1>
       {items.length === 0 ? (
-        <div className="rounded-card border border-dashed border-line p-10 text-center">
-          <p>Nothing saved yet. Tap “Save” on any product.</p>
-          <Link href="/products" className={`${btn} mt-4`}>Browse products</Link>
-        </div>
+        <EmptyState dashed title="Nothing saved yet. Tap “Save” on any product.">
+          <Button asChild><Link href="/products">Browse products</Link></Button>
+        </EmptyState>
       ) : (
         <ul className="grid grid-cols-2 gap-4 md:grid-cols-4">{items.map((p) => <ProductCard key={p.id} p={p} level={2} />)}</ul>
       )}

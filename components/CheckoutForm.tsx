@@ -3,7 +3,10 @@ import Script from "next/script";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { clearCart } from "@/app/actions/cart";
-import { btn, input, Notice } from "@/components/ui";
+import { Notice } from "@/components/shop-ui";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 type Start = {
   orderNumber: string; providerOrderId: string; amountCents: number; currency: string;
@@ -104,27 +107,29 @@ export function CheckoutForm({ defaultEmail, defaultName, totalLabel }: { defaul
     <>
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
       <form onSubmit={onSubmit} className="space-y-4" noValidate={false}>
-        <div>
-          <label htmlFor="email" className="mb-1 block text-sm font-medium">Email</label>
-          <input id="email" name="email" type="email" required defaultValue={defaultEmail} autoComplete="email" className={input} />
+        <div className="space-y-1.5">
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" name="email" type="email" required defaultValue={defaultEmail} autoComplete="email" />
         </div>
-        {FIELDS.map((f) => (
-          <div key={f.name}>
-            <label htmlFor={f.name} className="mb-1 block text-sm font-medium">{f.label}</label>
-            <input
-              id={f.name} name={f.name} required autoComplete={f.autoComplete} inputMode={f.inputMode}
-              defaultValue={f.name === "name" ? defaultName : ""} className={input}
-              {...(f.name === "phone" ? { pattern: "[6-9][0-9]{9}", title: "10-digit Indian mobile number" } : {})}
-              {...(f.name === "pincode" ? { pattern: "[1-9][0-9]{5}", title: "6-digit PIN code" } : {})}
-            />
-          </div>
-        ))}
+        <div className="grid gap-4 sm:grid-cols-2">
+          {FIELDS.map((f) => (
+            <div key={f.name} className={`space-y-1.5 ${f.name === "line1" ? "sm:col-span-2" : ""}`}>
+              <Label htmlFor={f.name}>{f.label}</Label>
+              <Input
+                id={f.name} name={f.name} required autoComplete={f.autoComplete} inputMode={f.inputMode}
+                defaultValue={f.name === "name" ? defaultName : ""}
+                {...(f.name === "phone" ? { pattern: "[6-9][0-9]{9}", title: "10-digit Indian mobile number" } : {})}
+                {...(f.name === "pincode" ? { pattern: "[1-9][0-9]{5}", title: "6-digit PIN code" } : {})}
+              />
+            </div>
+          ))}
+        </div>
         <div aria-live="assertive" className="space-y-2">
           {error && <Notice kind="error">{error}</Notice>}
           {status && <Notice>{status}</Notice>}
         </div>
-        <button className={`${btn} w-full`} disabled={busy}>{busy ? "Please wait…" : `Pay ${totalLabel}`}</button>
-        <p className="text-center text-xs text-muted">Secure payment by Razorpay (test mode: use Razorpay test cards or UPI).</p>
+        <Button size="lg" className="w-full" disabled={busy}>{busy ? "Please wait…" : `Pay ${totalLabel}`}</Button>
+        <p className="text-center text-xs text-muted-foreground">Secure payment by Razorpay (test mode: use Razorpay test cards or UPI).</p>
       </form>
     </>
   );

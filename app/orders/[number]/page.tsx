@@ -7,7 +7,11 @@ import { orderLines, orders } from "@/db/schema";
 import { getUser } from "@/lib/auth";
 import { formatMoney } from "@/lib/money";
 import { TotalsTable } from "@/components/Totals";
-import { btn, Notice } from "@/components/ui";
+import { Notice } from "@/components/shop-ui";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 export const metadata: Metadata = { title: "Order details", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -36,33 +40,42 @@ export default async function OrderPage({
   return (
     <article className="mx-auto max-w-2xl space-y-6">
       <header>
-        <p className="text-sm text-muted">Order</p>
-        <h1 className="text-2xl font-bold">{o.number}</h1>
-        <p className="mt-1 text-sm capitalize text-muted">Status: {o.status.replace("_", " ")}</p>
+        <p className="text-sm text-muted-foreground">Order</p>
+        <h1 className="text-2xl font-bold tracking-tight">{o.number}</h1>
+        <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+          Status: <Badge variant="outline" className="capitalize">{o.status.replace("_", " ")}</Badge>
+        </p>
       </header>
       {copy && <Notice kind={copy.kind}>{copy.text}</Notice>}
 
-      <section aria-labelledby="items" className="rounded-card border border-line bg-card p-5">
-        <h2 id="items" className="mb-3 font-semibold">Items</h2>
-        <ul className="space-y-2 text-sm">
-          {lines.map((l) => (
-            <li key={l.id} className="flex justify-between gap-3">
-              <span>{l.qty} × {l.name}</span><span>{formatMoney(l.unitPriceCents * l.qty, o.currency)}</span>
-            </li>
-          ))}
-        </ul>
-        <div className="mt-4 border-t border-line pt-3">
-          <TotalsTable t={{ subtotalCents: o.subtotalCents, discountCents: o.discountCents, shippingCents: o.shippingCents, taxCents: o.taxCents, totalCents: o.totalCents }} promo={o.promoCode} />
-        </div>
+      <section aria-labelledby="items">
+        <Card>
+          <CardHeader><h2 id="items" className="font-heading text-base font-medium">Items</h2></CardHeader>
+          <CardContent className="space-y-4">
+            <ul className="space-y-2 text-sm">
+              {lines.map((l) => (
+                <li key={l.id} className="flex justify-between gap-3">
+                  <span>{l.qty} × {l.name}</span><span>{formatMoney(l.unitPriceCents * l.qty, o.currency)}</span>
+                </li>
+              ))}
+            </ul>
+            <Separator />
+            <TotalsTable t={{ subtotalCents: o.subtotalCents, discountCents: o.discountCents, shippingCents: o.shippingCents, taxCents: o.taxCents, totalCents: o.totalCents }} promo={o.promoCode} />
+          </CardContent>
+        </Card>
       </section>
 
-      <section aria-labelledby="ship" className="rounded-card border border-line bg-card p-5 text-sm">
-        <h2 id="ship" className="mb-2 font-semibold">Shipping to</h2>
-        <address className="not-italic text-muted">
-          {addr.name}<br />{addr.line1}<br />{addr.city}, {addr.state} {addr.pincode}<br />{addr.phone}
-        </address>
+      <section aria-labelledby="ship">
+        <Card>
+          <CardHeader><h2 id="ship" className="font-heading text-base font-medium">Shipping to</h2></CardHeader>
+          <CardContent>
+            <address className="text-sm not-italic text-muted-foreground">
+              {addr.name}<br />{addr.line1}<br />{addr.city}, {addr.state} {addr.pincode}<br />{addr.phone}
+            </address>
+          </CardContent>
+        </Card>
       </section>
-      <Link href="/products" className={btn}>Continue shopping</Link>
+      <Button asChild size="lg"><Link href="/products">Continue shopping</Link></Button>
     </article>
   );
 }

@@ -1,13 +1,27 @@
 "use client";
 import { useState, useTransition } from "react";
+import { HeartIcon } from "lucide-react";
 import { addToCart } from "@/app/actions/cart";
 import { toggleWishlist } from "@/app/actions/engage";
 import { formatMoney } from "@/lib/money";
-import { btn, btnGhost, Notice, StockBadge } from "@/components/ui";
+import { cn } from "@/lib/utils";
+import { Notice, StockBadge } from "@/components/shop-ui";
+import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/native-select";
 
 export type VariantOption = {
   id: number; label: string; color: string; size: string; dimensions: string | null; priceCents: number; compareAt: number | null; available: number;
 };
+
+/** Pill/tile toggle used for colour and size choices (selected state is also exposed via aria-pressed). */
+const choice = (selected: boolean) =>
+  cn(
+    "h-auto rounded-lg border px-4 py-2 font-normal",
+    // The dark: variants are needed because the outline Button sets dark:bg-input/30, which would otherwise win in dark mode.
+    selected
+      ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90 dark:border-primary dark:bg-primary dark:hover:bg-primary/90"
+      : "bg-card hover:bg-accent dark:bg-card dark:hover:bg-accent",
+  );
 
 export function AddToCart({ variants, productId, initiallySaved }: { variants: VariantOption[]; productId: number; initiallySaved: boolean }) {
   const colors = [...new Set(variants.map((v) => v.color))];
@@ -24,26 +38,26 @@ export function AddToCart({ variants, productId, initiallySaved }: { variants: V
   const max = selected ? Math.min(selected.available, 20) : 1;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {colors.length > 1 && (
         <fieldset>
-          <legend className="mb-2 text-sm font-medium">Colour: <span className="text-muted">{color}</span></legend>
+          <legend className="mb-2 text-sm font-medium">Colour: <span className="text-muted-foreground">{color}</span></legend>
           <div className="flex flex-wrap gap-2">
             {colors.map((c) => {
               const any = variants.some((v) => v.color === c && v.available > 0);
               return (
-                <button
-                  key={c} type="button" aria-pressed={c === color}
+                <Button
+                  key={c} type="button" variant="outline" aria-pressed={c === color}
                   onClick={() => {
                     setColor(c);
                     const next = variants.find((v) => v.color === c && v.available > 0);
                     setVariantId(next?.id ?? null);
                     setQty(1);
                   }}
-                  className={`rounded-full border px-4 py-1.5 text-sm ${c === color ? "border-accent bg-accent text-accent-fg" : "border-line bg-card"} ${any ? "" : "line-through opacity-60"}`}
+                  className={cn(choice(c === color), "rounded-full py-1.5", !any && "line-through opacity-60")}
                 >
                   {c}
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -56,24 +70,25 @@ export function AddToCart({ variants, productId, initiallySaved }: { variants: V
           {sizes.map((v) => {
             const out = v.available <= 0;
             return (
-              <button
-                key={v.id} type="button" disabled={out} aria-pressed={v.id === variantId}
+              <Button
+                key={v.id} type="button" variant="outline" disabled={out} aria-pressed={v.id === variantId}
                 aria-label={`${v.size}${v.dimensions ? ` ${v.dimensions}` : ""}${out ? ", sold out" : ""}`}
                 onClick={() => { setVariantId(v.id); setQty(1); setMsg(null); }}
-                className={`min-w-12 rounded-lg border px-3 py-2 text-sm ${v.id === variantId ? "border-accent bg-accent text-accent-fg" : "border-line bg-card"} ${out ? "cursor-not-allowed line-through opacity-50" : ""}`}
+                className={cn(choice(v.id === variantId), "inline-block min-w-14 text-center", out && "line-through")}
               >
+                {/* Keep the space between the spans so the visible text ("Medium 45 × 60 cm") matches the aria-label. */}
                 <span className="block font-medium">{v.size}</span>{" "}
-                {v.dimensions && <span className={`block text-xs ${v.id === variantId ? "text-accent-fg" : "text-muted"}`}>{v.dimensions}</span>}
-              </button>
+                {v.dimensions && <span className={cn("block text-xs", v.id === variantId ? "text-primary-foreground/90" : "text-muted-foreground")}>{v.dimensions}</span>}
+              </Button>
             );
           })}
         </div>
       </fieldset>
 
       {selected && (
-        <p className="flex items-center gap-3 text-sm">
-          <span className="font-semibold">{formatMoney(selected.priceCents)}</span>
-          {selected.dimensions && <span className="text-muted">{selected.size}: {selected.dimensions}</span>}
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+          <span className="text-lg font-semibold">{formatMoney(selected.priceCents)}</span>
+          {selected.dimensions && <span className="text-muted-foreground">{selected.size}: {selected.dimensions}</span>}
           <StockBadge available={selected.available} />
         </p>
       )}
@@ -81,15 +96,12 @@ export function AddToCart({ variants, productId, initiallySaved }: { variants: V
       <div className="flex flex-wrap items-center gap-3">
         <label className="flex items-center gap-2 text-sm">
           Qty
-          <select
-            value={qty} onChange={(e) => setQty(Number(e.target.value))} disabled={!selected}
-            className="rounded-lg border border-line bg-card px-2 py-2"
-          >
+          <NativeSelect className="w-20" value={qty} onChange={(e) => setQty(Number(e.target.value))} disabled={!selected}>
             {Array.from({ length: max }, (_, i) => i + 1).map((n) => <option key={n}>{n}</option>)}
-          </select>
+          </NativeSelect>
         </label>
-        <button
-          type="button" className={btn} disabled={!selected || pending}
+        <Button
+          type="button" size="lg" disabled={!selected || pending}
           onClick={() =>
             start(async () => {
               const r = await addToCart(selected!.id, qty);
@@ -98,9 +110,9 @@ export function AddToCart({ variants, productId, initiallySaved }: { variants: V
           }
         >
           {pending ? "Adding…" : selected ? "Add to cart" : "Select an in-stock option"}
-        </button>
-        <button
-          type="button" className={btnGhost} aria-pressed={saved}
+        </Button>
+        <Button
+          type="button" size="lg" variant="outline" aria-pressed={saved}
           onClick={() =>
             start(async () => {
               const r = await toggleWishlist(productId);
@@ -109,8 +121,9 @@ export function AddToCart({ variants, productId, initiallySaved }: { variants: V
             })
           }
         >
-          {saved ? "♥ Saved" : "♡ Save"}
-        </button>
+          <HeartIcon aria-hidden className={cn(saved && "fill-current text-primary")} />
+          {saved ? "Saved" : "Save"}
+        </Button>
       </div>
       <div aria-live="polite" className="min-h-10">{msg && <Notice kind={msg.kind}>{msg.text}</Notice>}</div>
     </div>

@@ -6,6 +6,7 @@ import { getUser } from "@/lib/auth";
 import { formatMoney } from "@/lib/money";
 import { CheckoutForm } from "@/components/CheckoutForm";
 import { TotalsTable } from "@/components/Totals";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export const metadata: Metadata = { title: "Checkout", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -16,28 +17,32 @@ export default async function CheckoutPage() {
   if (cart.hasProblems) redirect("/cart");
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
+    <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
       <section aria-labelledby="h">
-        <h1 id="h" className="mb-4 text-2xl font-bold">Checkout</h1>
+        <h1 id="h" className="mb-5 text-2xl font-bold tracking-tight">Checkout</h1>
         {!user && (
-          <p className="mb-4 text-sm text-muted">
-            Checking out as a guest. <Link className="underline" href="/sign-in?next=/checkout">Sign in</Link> to track orders.
+          <p className="mb-5 text-sm text-muted-foreground">
+            Checking out as a guest. <Link className="text-foreground underline underline-offset-4" href="/sign-in?next=/checkout">Sign in</Link> to track orders.
           </p>
         )}
         <CheckoutForm defaultEmail={user?.email ?? ""} defaultName={user?.name ?? ""} totalLabel={formatMoney(cart.totals.totalCents)} />
       </section>
-      <aside aria-label="Order summary" className="space-y-3 self-start rounded-card border border-line bg-card p-5">
-        <h2 className="font-semibold">Order summary</h2>
-        <ul className="space-y-2 text-sm">
-          {cart.lines.map((l) => (
-            <li key={l.variantId} className="flex justify-between gap-3">
-              <span>{l.qty} × {l.productName} <span className="text-muted">({l.label})</span></span>
-              <span>{formatMoney(l.unitPriceCents * l.qty)}</span>
-            </li>
-          ))}
-        </ul>
-        <TotalsTable t={cart.totals} promo={cart.promoCode} />
-        <p className="text-xs text-muted">Stock is reserved for 30 minutes after you press Pay.</p>
+      <aside aria-label="Order summary" className="self-start lg:sticky lg:top-24">
+        <Card>
+          <CardHeader><h2 className="font-heading text-base font-medium">Order summary</h2></CardHeader>
+          <CardContent className="space-y-3">
+            <ul className="space-y-2 text-sm">
+              {cart.lines.map((l) => (
+                <li key={l.variantId} className="flex justify-between gap-3">
+                  <span>{l.qty} × {l.productName} <span className="text-muted-foreground">({l.label})</span></span>
+                  <span>{formatMoney(l.unitPriceCents * l.qty)}</span>
+                </li>
+              ))}
+            </ul>
+            <TotalsTable t={cart.totals} promo={cart.promoCode} />
+            <p className="text-xs text-muted-foreground">Stock is reserved for 30 minutes after you press Pay.</p>
+          </CardContent>
+        </Card>
       </aside>
     </div>
   );

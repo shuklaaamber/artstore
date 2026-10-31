@@ -10,7 +10,10 @@ import { listProducts } from "@/lib/catalog";
 import { AddToCart, type VariantOption } from "@/components/AddToCart";
 import { ReviewForm } from "@/components/ReviewForm";
 import { ProductCard } from "@/components/ProductCard";
-import { Price, Stars } from "@/components/ui";
+import { Price, Stars } from "@/components/shop-ui";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 const load = cache(async (slug: string) => {
   const [row] = await db
@@ -105,30 +108,31 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   return (
     <article className="space-y-12">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
-      <nav aria-label="Breadcrumb" className="text-sm text-muted">
+      <nav aria-label="Breadcrumb" className="text-sm text-muted-foreground">
         <ol className="flex flex-wrap gap-1">
           <li><Link href="/products" className="hover:underline">Shop</Link> /</li>
           <li><Link href={`/products?category=${c.slug}`} className="hover:underline">{c.name}</Link> /</li>
-          <li aria-current="page" className="text-fg">{p.name}</li>
+          <li aria-current="page" className="text-foreground">{p.name}</li>
         </ol>
       </nav>
 
-      <div className="grid gap-8 md:grid-cols-2">
+      <div className="grid gap-8 md:grid-cols-2 lg:gap-12">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={p.image} alt={p.name} width={800} height={1000} fetchPriority="high" className="w-full rounded-card border border-line object-cover" />
+        <img src={p.image} alt={p.name} width={800} height={1000} fetchPriority="high" className="w-full rounded-2xl border object-cover" />
         <div className="space-y-4">
-          <h1 className="text-3xl font-bold">{p.name}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{p.name}</h1>
           <div className="flex items-center gap-4">
             <Price cents={minPrice} compareAt={maxCompare} className="text-xl" />
             <Stars rating={rating} count={p.ratingCount} />
           </div>
-          <p className="text-muted">{p.description}</p>
+          <p className="leading-relaxed text-muted-foreground">{p.description}</p>
           {options.length ? (
             <AddToCart variants={options} productId={p.id} initiallySaved={!!saved} />
           ) : (
-            <p className="text-muted">This product has no purchasable options right now.</p>
+            <p className="text-muted-foreground">This product has no purchasable options right now.</p>
           )}
-          <ul className="space-y-1 border-t border-line pt-4 text-sm text-muted">
+          <Separator />
+          <ul className="space-y-1 text-sm text-muted-foreground">
             <li>Free shipping over ₹999, otherwise ₹49 flat.</li>
             <li>Stock is held for 30 minutes once you start checkout.</li>
           </ul>
@@ -136,17 +140,21 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       </div>
 
       <section aria-labelledby="rev" className="space-y-4">
-        <h2 id="rev" className="text-xl font-semibold">Reviews</h2>
-        {revs.length === 0 && <p className="text-sm text-muted">No reviews yet. Be the first.</p>}
+        <h2 id="rev" className="text-xl font-semibold tracking-tight">Reviews</h2>
+        {revs.length === 0 && <p className="text-sm text-muted-foreground">No reviews yet. Be the first.</p>}
         <ul className="space-y-3">
           {revs.map(({ r, name }) => (
-            <li key={r.id} className="rounded-card border border-line bg-card p-4">
-              <div className="flex flex-wrap items-center gap-2 text-sm">
-                <Stars rating={r.rating} count={1} />
-                <span className="font-medium">{name}</span>
-                {r.verifiedPurchase && <span className="rounded-full bg-ok/15 px-2 py-0.5 text-xs text-ok">Verified purchase</span>}
-              </div>
-              {r.body && <p className="mt-2 whitespace-pre-wrap text-sm">{r.body}</p>}
+            <li key={r.id}>
+              <Card>
+                <CardContent className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-2 text-sm">
+                    <Stars rating={r.rating} count={1} />
+                    <span className="font-medium">{name}</span>
+                    {r.verifiedPurchase && <Badge variant="outline" className="border-success/40 bg-success/10 text-success">Verified purchase</Badge>}
+                  </div>
+                  {r.body && <p className="whitespace-pre-wrap text-sm">{r.body}</p>}
+                </CardContent>
+              </Card>
             </li>
           ))}
         </ul>
@@ -155,7 +163,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
       {related.items.filter((i) => i.id !== p.id).length > 0 && (
         <section aria-labelledby="rel">
-          <h2 id="rel" className="mb-4 text-xl font-semibold">You may also like</h2>
+          <h2 id="rel" className="mb-5 text-xl font-semibold tracking-tight">You may also like</h2>
           <ul className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {related.items.filter((i) => i.id !== p.id).slice(0, 4).map((i) => <ProductCard key={i.id} p={i} />)}
           </ul>

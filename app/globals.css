@@ -1,69 +1,108 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* Dark mode follows the OS setting (as before); shadcn's `dark:` utilities use the same query. */
+@custom-variant dark (@media (prefers-color-scheme: dark));
 
 @theme inline {
-  --color-bg: var(--bg);
-  --color-fg: var(--fg);
-  --color-muted: var(--muted);
+  --font-sans: var(--font-sans);
+  --font-heading: var(--font-sans);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
   --color-card: var(--card);
-  --color-line: var(--line);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
-  --color-accent-fg: var(--accent-fg);
-  --color-danger: var(--danger);
-  --color-ok: var(--ok);
-  --color-warn: var(--warn);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --radius-card: 14px;
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Brand palette (Canvas & Co.): warm neutrals with a terracotta primary. */
 :root {
-  --bg: #fafaf7;
-  --fg: #16150f;
-  --muted: #5c5a52;
+  --background: #fafaf7;
+  --foreground: #16150f;
   --card: #ffffff;
-  --line: #e4e2da;
-  --accent: #8c3b27;
-  --accent-fg: #ffffff;
-  --danger: #b3261e;
-  --ok: #1b6e3a;
-  --warn: #8a5a00;
+  --card-foreground: #16150f;
+  --popover: #ffffff;
+  --popover-foreground: #16150f;
+  --primary: #8c3b27;
+  --primary-foreground: #ffffff;
+  --secondary: #f0eee6;
+  --secondary-foreground: #16150f;
+  --muted: #f0eee6;
+  --muted-foreground: #5c5a52;
+  --accent: #f4e8e2;
+  --accent-foreground: #16150f;
+  --destructive: #b3261e;
+  --border: #e4e2da;
+  --input: #8f8c80; /* ≥3:1 against the card/background so field edges are perceivable */
+  --ring: #8c3b27;
+  --success: #1b6e3a;
+  --warning: #8a5a00;
+  --radius: 0.75rem;
   color-scheme: light dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #121410;
-    --fg: #f2f1ea;
-    --muted: #b4b2a6;
+    --background: #121410;
+    --foreground: #f2f1ea;
     --card: #1b1d18;
-    --line: #34362e;
-    --accent: #f0b59f;
-    --accent-fg: #2a110a;
-    --danger: #ff8a80;
-    --ok: #7fd49a;
-    --warn: #f0c36a;
+    --card-foreground: #f2f1ea;
+    --popover: #1b1d18;
+    --popover-foreground: #f2f1ea;
+    --primary: #f0b59f;
+    --primary-foreground: #2a110a;
+    --secondary: #272923;
+    --secondary-foreground: #f2f1ea;
+    --muted: #272923;
+    --muted-foreground: #b4b2a6;
+    --accent: #33261f;
+    --accent-foreground: #f2f1ea;
+    --destructive: #ff8a80;
+    --border: #34362e;
+    --input: #75776b;
+    --ring: #f0b59f;
+    --success: #7fd49a;
+    --warning: #f0c36a;
   }
 }
 
-body {
-  background: var(--bg);
-  color: var(--fg);
-  font-family: var(--font-sans);
-}
-
-:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-.skeleton {
-  background: linear-gradient(90deg, var(--line), color-mix(in srgb, var(--line) 50%, transparent), var(--line));
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite linear;
-  border-radius: 8px;
-}
-@keyframes shimmer {
-  to { background-position: -200% 0; }
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  /* Keyboard focus ring for plain links and anything not covered by a component's own ring. */
+  :focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 2px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -4,7 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { mergeCartAfterSignIn } from "@/app/actions/cart";
-import { btn, input, Notice } from "@/components/ui";
+import { Notice } from "@/components/shop-ui";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export function AuthForm({ mode, next }: { mode: "sign-in" | "sign-up"; next: string }) {
   const router = useRouter();
@@ -34,29 +38,37 @@ export function AuthForm({ mode, next }: { mode: "sign-in" | "sign-up"; next: st
   }
 
   return (
-    <form onSubmit={onSubmit} className="mx-auto max-w-sm space-y-4">
-      <h1 className="text-2xl font-bold">{up ? "Create your account" : "Sign in"}</h1>
-      {up && (
-        <div>
-          <label htmlFor="name" className="mb-1 block text-sm font-medium">Name</label>
-          <input id="name" name="name" required autoComplete="name" className={input} />
-        </div>
-      )}
-      <div>
-        <label htmlFor="email" className="mb-1 block text-sm font-medium">Email</label>
-        <input id="email" name="email" type="email" required autoComplete="email" className={input} />
-      </div>
-      <div>
-        <label htmlFor="password" className="mb-1 block text-sm font-medium">Password</label>
-        <input id="password" name="password" type="password" required minLength={8} autoComplete={up ? "new-password" : "current-password"} className={input} />
-        {up && <p className="mt-1 text-xs text-muted">At least 8 characters.</p>}
-      </div>
-      <div aria-live="assertive">{error && <Notice kind="error">{error}</Notice>}</div>
-      <button className={`${btn} w-full`} disabled={busy}>{busy ? "Please wait…" : up ? "Create account" : "Sign in"}</button>
-      <p className="text-center text-sm text-muted">
-        {up ? "Already have an account? " : "New here? "}
-        <Link className="underline" href={`${up ? "/sign-in" : "/sign-up"}?next=${encodeURIComponent(next)}`}>{up ? "Sign in" : "Create an account"}</Link>
-      </p>
-    </form>
+    <Card className="mx-auto my-6 max-w-sm">
+      <form onSubmit={onSubmit} className="space-y-4">
+        <CardHeader>
+          <h1 className="text-2xl font-bold leading-snug">{up ? "Create your account" : "Sign in"}</h1>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {up && (
+            <div className="space-y-1.5">
+              <Label htmlFor="name">Name</Label>
+              <Input id="name" name="name" required autoComplete="name" />
+            </div>
+          )}
+          <div className="space-y-1.5">
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" name="email" type="email" required autoComplete="email" />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="password">Password</Label>
+            <Input id="password" name="password" type="password" required minLength={8} autoComplete={up ? "new-password" : "current-password"} />
+            {up && <p className="text-xs text-muted-foreground">At least 8 characters.</p>}
+          </div>
+          <div aria-live="assertive">{error && <Notice kind="error">{error}</Notice>}</div>
+        </CardContent>
+        <CardFooter className="flex-col gap-4">
+          <Button size="lg" className="w-full" disabled={busy}>{busy ? "Please wait…" : up ? "Create account" : "Sign in"}</Button>
+          <p className="text-center text-sm text-muted-foreground">
+            {up ? "Already have an account? " : "New here? "}
+            <Link className="text-foreground underline underline-offset-4" href={`${up ? "/sign-in" : "/sign-up"}?next=${encodeURIComponent(next)}`}>{up ? "Sign in" : "Create an account"}</Link>
+          </p>
+        </CardFooter>
+      </form>
+    </Card>
   );
 }

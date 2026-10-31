@@ -4,7 +4,10 @@ import { db } from "@/lib/db";
 import { categories } from "@/db/schema";
 import { listProducts, type SortKey } from "@/lib/catalog";
 import { ProductCard } from "@/components/ProductCard";
-import { btn, input } from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { EmptyState } from "@/components/shop-ui";
 
 type SP = Promise<{ q?: string; category?: string; sort?: string; page?: string }>;
 
@@ -45,20 +48,22 @@ export default async function Products({ searchParams }: { searchParams: SP }) {
 
   return (
     <div className="grid gap-8 md:grid-cols-[220px_1fr]">
-      <aside aria-label="Filters" className="space-y-6">
-        <form action="/products" className="space-y-3">
-          <label htmlFor="q" className="block text-sm font-medium">Search</label>
-          <input id="q" name="q" type="search" defaultValue={sp.q} className={input} />
+      <aside aria-label="Filters" className="space-y-8 md:sticky md:top-24 md:self-start">
+        <form action="/products" className="space-y-2">
+          <Label htmlFor="q">Search</Label>
+          <Input id="q" name="q" type="search" defaultValue={sp.q} />
           {sp.category && <input type="hidden" name="category" value={sp.category} />}
-          <button className={btn}>Search</button>
+          <Button className="w-full">Search</Button>
         </form>
         <nav aria-label="Categories">
           <h2 className="mb-2 text-sm font-medium">Category</h2>
-          <ul className="space-y-1 text-sm">
-            <li><Link aria-current={!sp.category ? "page" : undefined} className={!sp.category ? "font-semibold underline" : "hover:underline"} href={href({ category: undefined, page: undefined })}>All</Link></li>
+          <ul className="flex flex-wrap gap-1 text-sm md:flex-col">
+            <li><Button asChild size="sm" variant={!sp.category ? "secondary" : "ghost"} className="w-full justify-start"><Link aria-current={!sp.category ? "page" : undefined} href={href({ category: undefined, page: undefined })}>All</Link></Button></li>
             {cats.map((c) => (
               <li key={c.id}>
-                <Link aria-current={sp.category === c.slug ? "page" : undefined} className={sp.category === c.slug ? "font-semibold underline" : "hover:underline"} href={href({ category: c.slug, page: undefined })}>{c.name}</Link>
+                <Button asChild size="sm" variant={sp.category === c.slug ? "secondary" : "ghost"} className="w-full justify-start">
+                  <Link aria-current={sp.category === c.slug ? "page" : undefined} href={href({ category: c.slug, page: undefined })}>{c.name}</Link>
+                </Button>
               </li>
             ))}
           </ul>
@@ -68,26 +73,25 @@ export default async function Products({ searchParams }: { searchParams: SP }) {
       <section aria-labelledby="h">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 id="h" className="text-2xl font-bold">{sp.q ? `Results for “${sp.q}”` : "All products"}</h1>
-            <p className="text-sm text-muted" aria-live="polite">{total} {total === 1 ? "product" : "products"}</p>
+            <h1 id="h" className="text-2xl font-bold tracking-tight">{sp.q ? `Results for “${sp.q}”` : "All products"}</h1>
+            <p className="text-sm text-muted-foreground" aria-live="polite">{total} {total === 1 ? "product" : "products"}</p>
           </div>
-          <nav aria-label="Sort" className="flex flex-wrap gap-2 text-sm">
+          <nav aria-label="Sort" className="flex flex-wrap gap-2">
             {SORTS.map((s) => (
-              <Link key={s.key} href={href({ sort: s.key === "newest" ? undefined : s.key, page: undefined })}
-                aria-current={sort === s.key ? "true" : undefined}
-                className={`rounded-full border px-3 py-1 ${sort === s.key ? "border-accent bg-accent text-accent-fg" : "border-line bg-card"}`}>
-                {s.label}
-              </Link>
+              <Button key={s.key} asChild size="sm" variant={sort === s.key ? "default" : "outline"} className="rounded-full">
+                <Link href={href({ sort: s.key === "newest" ? undefined : s.key, page: undefined })} aria-current={sort === s.key ? "true" : undefined}>
+                  {s.label}
+                </Link>
+              </Button>
             ))}
           </nav>
         </div>
 
         {items.length === 0 ? (
-          <div className="rounded-card border border-dashed border-line p-10 text-center">
-            <p className="font-medium">Nothing matched{sp.q ? ` “${sp.q}”` : ""}.</p>
-            <p className="mt-1 text-sm text-muted">Check the spelling, try a broader word like “tee”, or browse a category.</p>
-            <Link href="/products" className={`${btn} mt-4`}>Clear filters</Link>
-          </div>
+          <EmptyState dashed title={`Nothing matched${sp.q ? ` “${sp.q}”` : ""}.`}>
+            <p className="text-sm text-muted-foreground">Check the spelling, try a broader word like “tee”, or browse a category.</p>
+            <Button asChild><Link href="/products">Clear filters</Link></Button>
+          </EmptyState>
         ) : (
           <ul className="grid grid-cols-2 gap-4 lg:grid-cols-3">
             {items.map((p, i) => <ProductCard key={p.id} p={p} priority={i < 3} level={2} />)}
@@ -95,10 +99,10 @@ export default async function Products({ searchParams }: { searchParams: SP }) {
         )}
 
         {pages > 1 && (
-          <nav aria-label="Pagination" className="mt-8 flex items-center justify-center gap-2 text-sm">
-            {page > 1 && <Link className="rounded-full border border-line px-4 py-2" href={href({ page: String(page - 1) })}>Previous</Link>}
-            <span className="px-2 text-muted">Page {page} of {pages}</span>
-            {page < pages && <Link className="rounded-full border border-line px-4 py-2" href={href({ page: String(page + 1) })}>Next</Link>}
+          <nav aria-label="Pagination" className="mt-10 flex items-center justify-center gap-3 text-sm">
+            {page > 1 && <Button asChild variant="outline"><Link href={href({ page: String(page - 1) })}>Previous</Link></Button>}
+            <span className="px-2 text-muted-foreground">Page {page} of {pages}</span>
+            {page < pages && <Button asChild variant="outline"><Link href={href({ page: String(page + 1) })}>Next</Link></Button>}
           </nav>
         )}
       </section>

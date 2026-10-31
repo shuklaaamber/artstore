@@ -6,7 +6,11 @@ import { db } from "@/lib/db";
 import { orders } from "@/db/schema";
 import { getUser } from "@/lib/auth";
 import { formatMoney } from "@/lib/money";
-import { btn } from "@/components/ui";
+import { EmptyState } from "@/components/shop-ui";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 export const metadata: Metadata = { title: "Your orders", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -17,26 +21,30 @@ export default async function OrdersPage() {
   const rows = await db.select().from(orders).where(eq(orders.userId, user.id)).orderBy(desc(orders.createdAt));
 
   return (
-    <section aria-labelledby="h" className="space-y-4">
-      <h1 id="h" className="text-2xl font-bold">Your orders</h1>
+    <section aria-labelledby="h" className="space-y-5">
+      <h1 id="h" className="text-2xl font-bold tracking-tight">Your orders</h1>
       {rows.length === 0 ? (
-        <div className="rounded-card border border-dashed border-line p-10 text-center">
-          <p>You haven’t placed any orders yet.</p>
-          <Link href="/products" className={`${btn} mt-4`}>Start shopping</Link>
-        </div>
+        <EmptyState dashed title="You haven’t placed any orders yet.">
+          <Button asChild><Link href="/products">Start shopping</Link></Button>
+        </EmptyState>
       ) : (
-        <ul className="divide-y divide-line rounded-card border border-line bg-card">
-          {rows.map((o) => (
-            <li key={o.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
-              <div>
-                <Link href={`/orders/${o.number}`} className="font-medium hover:underline">{o.number}</Link>
-                <p className="text-sm text-muted">{o.createdAt.toLocaleDateString("en-IN", { dateStyle: "medium" })}</p>
-              </div>
-              <span className="rounded-full border border-line px-3 py-1 text-xs capitalize">{o.status.replace("_", " ")}</span>
-              <span className="font-semibold">{formatMoney(o.totalCents, o.currency)}</span>
-            </li>
-          ))}
-        </ul>
+        <Card className="py-0">
+          <ul>
+            {rows.map((o, i) => (
+              <li key={o.id}>
+                {i > 0 && <Separator />}
+                <div className="flex flex-wrap items-center justify-between gap-3 p-4">
+                  <div>
+                    <Link href={`/orders/${o.number}`} className="font-medium hover:underline">{o.number}</Link>
+                    <p className="text-sm text-muted-foreground">{o.createdAt.toLocaleDateString("en-IN", { dateStyle: "medium" })}</p>
+                  </div>
+                  <Badge variant="outline" className="capitalize">{o.status.replace("_", " ")}</Badge>
+                  <span className="font-semibold">{formatMoney(o.totalCents, o.currency)}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Card>
       )}
     </section>
   );
